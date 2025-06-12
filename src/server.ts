@@ -1,7 +1,6 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import * as dotenv from 'dotenv';
 
-
 dotenv.config();
 
 const fastify: FastifyInstance = Fastify({
