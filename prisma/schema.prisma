@@ -15,6 +15,7 @@ model User {
   firstName       String
   photo           String?
   salt            String
+  stayConnected Boolean @default(false)
 
   createdProjects Project[]        @relation("CreatedProjects")
   userProjects    UserProject[]
