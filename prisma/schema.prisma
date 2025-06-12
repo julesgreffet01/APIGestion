@@ -1,0 +1,248 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int              @id @default(autoincrement())
+  email           String           @unique
+  password        String
+  name            String
+  firstName       String
+  photo           String?
+  salt            String
+
+  createdProjects Project[]        @relation("CreatedProjects")
+  userProjects    UserProject[]
+  calendarEvents  CalendarEvent[]  @relation("UserCalendar")
+  vaultPasswords  VaultPassword[]  @relation("UserVault")
+  ignoredSites    IgnoredSite[]    @relation("UserIgnoredSite")
+  devices         Device[]         @relation("UserDevice")
+  trelloCards     TrelloCardUser[]
+  realisations    TrelloCard[]     @relation("TrelloCardRealisator")
+  todoTasks       ToDoTaskUser[]
+  todoRealisations ToDoTask[]      @relation("ToDoTaskUser")
+  ganttTasks      GanttActivityUser[]
+}
+
+model Project {
+  id            Int            @id @default(autoincrement())
+  name          String
+  description   String
+  delete        Boolean        @default(false)
+  creatorId     Int
+
+  creator       User           @relation("CreatedProjects", fields: [creatorId], references: [id])
+  userProjects  UserProject[]
+  trelloBoards  Trello[]       @relation("TrelloProject")
+  todos         ToDo[]         @relation("ToDoProject")
+  gantts        Gantt[]        @relation("GanttProject")
+}
+
+model Role {
+  id            Int            @id @default(autoincrement())
+  name          String
+  userProjects  UserProject[]
+}
+
+model UserProject {
+  userId    Int
+  projectId Int
+  roleId    Int
+
+  user      User    @relation(fields: [userId], references: [id])
+  project   Project @relation(fields: [projectId], references: [id])
+  role      Role    @relation(fields: [roleId], references: [id])
+
+  @@id([userId, projectId, roleId])
+}
+
+model CalendarEvent {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String
+  dateEvent   DateTime
+  userId      Int
+
+  user        User     @relation("UserCalendar", fields: [userId], references: [id])
+}
+
+model VaultPassword {
+  id        Int      @id @default(autoincrement())
+  siteName  String
+  url       String
+  password  String
+  username  String
+  iv        String
+  userId    Int
+
+  user      User     @relation("UserVault", fields: [userId], references: [id])
+}
+
+model IgnoredSite {
+  id        Int      @id @default(autoincrement())
+  domain    String
+  userId    Int
+
+  user      User     @relation("UserIgnoredSite", fields: [userId], references: [id])
+}
+
+model Device {
+  id        Int      @id @default(autoincrement())
+  name      String
+  key       String
+  iv        String
+  userId    Int
+
+  user      User     @relation("UserDevice", fields: [userId], references: [id])
+}
+
+model LoginLog {
+  id          Int      @id @default(autoincrement())
+  success     Boolean
+  attemptedAt DateTime
+  ipAddress   String
+}
+
+model IpBan {
+  id         Int     @id @default(autoincrement())
+  ipAddress  String
+}
+
+model Statut {
+  id         Int              @id @default(autoincrement())
+  libelle    String
+  cards      TrelloCard[]
+  tasks      ToDoTask[]
+  activities GanttActivity[]
+}
+
+model Trello {
+  id         Int         @id @default(autoincrement())
+  name       String
+  projectId  Int
+
+  project    Project     @relation("TrelloProject", fields: [projectId], references: [id])
+  lists      TrelloList[] @relation("ListTrello")
+}
+
+model TrelloList {
+  id        Int         @id @default(autoincrement())
+  name      String
+  position  Int
+  trelloId  Int
+
+  trello    Trello      @relation("ListTrello", fields: [trelloId], references: [id])
+  cards     TrelloCard[]
+}
+
+model TrelloCard {
+  id            Int               @id @default(autoincrement())
+  name          String
+  description   String
+  realDate      DateTime
+  position      Int
+  realised      Boolean           @default(false)
+  realisatorId  Int
+  listId        Int
+  statutId      Int
+
+  realisator    User              @relation("TrelloCardRealisator", fields: [realisatorId], references: [id])
+  list          TrelloList        @relation(fields: [listId], references: [id])
+  statut        Statut            @relation(fields: [statutId], references: [id])
+  users         TrelloCardUser[]
+}
+
+model TrelloCardUser {
+  userId Int
+  cardId Int
+
+  user   User       @relation(fields: [userId], references: [id])
+  card   TrelloCard @relation(fields: [cardId], references: [id])
+
+  @@id([userId, cardId])
+}
+
+model ToDo {
+  id        Int      @id @default(autoincrement())
+  name      String
+  projectId Int
+
+  project   Project  @relation("ToDoProject", fields: [projectId], references: [id])
+  tasks     ToDoTask[]
+}
+
+model ToDoTask {
+  id            Int         @id @default(autoincrement())
+  name          String
+  position      Int
+  realised      Boolean     @default(false)
+  realDate      DateTime
+  realisatorId  Int
+  todoId        Int
+  statutId      Int
+
+  realisator    User        @relation("ToDoTaskUser", fields: [realisatorId], references: [id])
+  todo          ToDo        @relation(fields: [todoId], references: [id])
+  statut        Statut      @relation(fields: [statutId], references: [id])
+  users         ToDoTaskUser[]
+}
+
+model ToDoTaskUser {
+  userId Int
+  taskId Int
+
+  user   User     @relation(fields: [userId], references: [id])
+  task   ToDoTask @relation(fields: [taskId], references: [id])
+
+  @@id([userId, taskId])
+}
+
+model Gantt {
+  id         Int             @id @default(autoincrement())
+  name       String
+  projectId  Int
+
+  project    Project         @relation("GanttProject", fields: [projectId], references: [id])
+  activities GanttActivity[] @relation("GanttActivities")
+}
+
+model GanttActivity {
+  id           Int                      @id @default(autoincrement())
+  name         String
+  description  String
+  startDate    DateTime
+  endDate      DateTime
+  progress     Int                      @default(0)
+  statutId     Int
+  ganttId      Int
+
+  statut       Statut                   @relation(fields: [statutId], references: [id])
+  gantt        Gantt                    @relation("GanttActivities", fields: [ganttId], references: [id])
+  dependencies GanttActivityAssignement[] @relation("DependsOnTask")
+  dependents   GanttActivityAssignement[] @relation("IsDependencyOf")
+  users        GanttActivityUser[]
+}
+
+model GanttActivityAssignement {
+  id           Int            @id @default(autoincrement())
+  taskId       Int
+  dependTaskId Int
+
+  task         GanttActivity  @relation("IsDependencyOf", fields: [taskId], references: [id])
+  dependTask   GanttActivity  @relation("DependsOnTask", fields: [dependTaskId], references: [id])
+}
+
+model GanttActivityUser {
+  userId Int
+  taskId Int
+
+  user   User          @relation(fields: [userId], references: [id])
+  task   GanttActivity @relation(fields: [taskId], references: [id])
+
+  @@id([userId, taskId])
+}
