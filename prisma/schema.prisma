@@ -58,7 +58,7 @@ model UserProject {
   project   Project @relation(fields: [projectId], references: [id])
   role      Role    @relation(fields: [roleId], references: [id])
 
-  @@id([userId, projectId, roleId])
+  @@id([userId, projectId])
 }
 
 model CalendarEvent {
