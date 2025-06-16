@@ -2,7 +2,7 @@ import fp from 'fastify-plugin'
 import {FastifyInstance, FastifyReply} from 'fastify'
 
 export default fp(async function (fastify: FastifyInstance) {
-    fastify.decorateReply('apiResponse', async function (reply: FastifyReply, statusCode: number, data = null): Promise<FastifyReply> {
+    fastify.decorateReply('apiResponse', async function (statusCode: number, data = null): Promise<FastifyReply> {
         const defaultMessages: Record<number, string> = {
             200: 'Succès',
             201: 'Créé avec succès',
@@ -20,6 +20,6 @@ export default fp(async function (fastify: FastifyInstance) {
         if (data !== null) {
             response.data = data
         }
-        return reply.code(statusCode).send(response)
+        return this.code(statusCode).send(response)
     });
 });

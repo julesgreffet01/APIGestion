@@ -1,5 +1,7 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import * as dotenv from 'dotenv';
+import apiResponsePlugin from './plugins/response'
+import droitsPlugins from './plugins/droits'
 
 dotenv.config();
 
@@ -8,7 +10,8 @@ const fastify: FastifyInstance = Fastify({
     caseSensitive: true,
 });
 
-
+fastify.register(apiResponsePlugin);
+fastify.register(droitsPlugins);
 
 const start = async () => {
     try {
