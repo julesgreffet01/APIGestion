@@ -1,14 +1,10 @@
 import fp from 'fastify-plugin'
-import jwt from '@fastify/jwt'
 import {FastifyInstance, FastifyRequest} from 'fastify'
 import {PrismaClient} from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export default fp(async function (fastify: FastifyInstance) {
-    fastify.register(jwt, {
-        secret: process.env.JWT as string,
-    });
 
     fastify.decorate('verifyToken', async (request: FastifyRequest): Promise<boolean> => {
         try {
