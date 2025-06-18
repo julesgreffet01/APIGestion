@@ -6,6 +6,7 @@ import path from 'path'
 import { pipeline } from 'stream'
 import { promisify } from 'util'
 import {sendMail} from '../../utils/mailer';
+import {normalizeEmail} from "./auth.helper";
 
 const pump = promisify(pipeline)
 const prisma = new PrismaClient()
@@ -48,7 +49,11 @@ export default class AuthController {
         }
 
         //------- verification du user --------
-        const { email, password } = req.body;
+        let { email, password } = req.body;
+        if (!email || !password) {
+            return reply.apiResponse(400, 'Email et mot de passe sont requis.');
+        }
+        email = normalizeEmail(email);
         const user = await prisma.user.findUnique({ where: { email } });
         const isMatch = !!user && (await bcrypt.compare(password, user.password));
 
@@ -110,12 +115,13 @@ export default class AuthController {
         }
 
         // 3. Validation des champs requis
-        const { email, password, name, firstName } = userData
+        let { email, password, name, firstName } = userData
         if (![email, password, name, firstName].every(Boolean)) {
             return reply.apiResponse(400, 'Tous les champs sont requis')
         }
 
         // 4. Vérification unicité email
+        email = normalizeEmail(email as string);
         if (await prisma.user.findUnique({ where: { email } })) {
             return reply.apiResponse(400, 'Email déjà utilisé')
         }
@@ -145,8 +151,9 @@ export default class AuthController {
 
 
     async recuperationMDP(req: FastifyRequest<{ Body: { email: string }}>, reply: FastifyReply) {
-        const { email } = req.body;
+        let { email } = req.body;
         if(!email) return reply.apiResponse(401);
+        email = normalizeEmail(email as string);
         const user = await prisma.user.findUnique({
             where: { email },
             select: { id: true },
