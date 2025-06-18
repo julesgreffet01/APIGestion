@@ -6,19 +6,20 @@ const prisma = new PrismaClient();
 
 export default fp(async function (fastify: FastifyInstance) {
 
-    fastify.decorate('verifyToken', async (request: FastifyRequest): Promise<boolean> => {
+    fastify.decorate('verifyToken', async function (this: FastifyInstance,request: FastifyRequest): Promise<boolean> {
         try {
-            await request.jwtVerify();
+            await request.jwtVerify(); // 🔐 Vérifie le token depuis header/cookie
 
             const userId = request.user?.userId;
             if (!userId) return false;
 
             await prisma.user.findUniqueOrThrow({
-                where: {id: userId},
-                select: {id: true}
+                where: { id: userId },
+                select: { id: true }
             });
             return true;
-        } catch {
+        } catch (err) {
+            console.error('❌ Erreur de vérification du token :', err);
             return false;
         }
     });

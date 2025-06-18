@@ -102,15 +102,15 @@ model Device {
 }
 
 model LoginLog {
-  id          Int      @id @default(autoincrement())
-  success     Boolean
-  attemptedAt DateTime
-  ipAddress   String
+    id          Int      @id @default(autoincrement())
+    success     Boolean
+    attemptedAt DateTime @default(now())
+    ipAddress   String
 }
 
 model IpBan {
   id         Int     @id @default(autoincrement())
-  ipAddress  String
+  ipAddress String @unique
 }
 
 model Statut {
