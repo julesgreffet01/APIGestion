@@ -13,6 +13,7 @@ import cors from '@fastify/cors'
 //----- routes ---
 import userRoutes from './modules/user/user.routes'
 import authRoutes from './modules/auth/auth.routes'
+import calendarRoutes from './modules/calendar/calendar.routes'
 
 
 dotenv.config();
@@ -58,6 +59,7 @@ fastify.register(droitsPlugins);
 // routes
 fastify.register(authRoutes);
 fastify.register(userRoutes, {prefix: '/user'});
+fastify.register(calendarRoutes, {prefix: '/calendar'});
 
 
 //start du server

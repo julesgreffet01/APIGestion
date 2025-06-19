@@ -6,8 +6,7 @@ interface SearchResult {
     id: number;
     name: string;
     type: 'project' | 'calendar' | 'gantt' | 'todo' | 'trello' | 'trello_card' | 'todo_task' | 'gantt_activity';
-    description?: string;
-    projectName?: string; // Pour les éléments liés à un projet
+    projectName?: string;
 }
 
 export async function searchUserItems(userId: number, searchTerm: string): Promise<SearchResult[]> {
@@ -37,7 +36,6 @@ export async function searchUserItems(userId: number, searchTerm: string): Promi
                 id: p.id,
                 name: p.name,
                 type: 'project',
-                description: p.description ?? undefined,
             });
         }
     });
@@ -58,7 +56,6 @@ export async function searchUserItems(userId: number, searchTerm: string): Promi
                 id: e.id,
                 name: e.name,
                 type: 'calendar',
-                description: e.description,
             });
         }
     });
@@ -118,7 +115,6 @@ export async function searchUserItems(userId: number, searchTerm: string): Promi
                 id: a.id,
                 name: a.name,
                 type: 'gantt_activity',
-                description: a.description,
                 projectName: a.gantt.project.name,
             });
         }
@@ -246,7 +242,6 @@ export async function searchUserItems(userId: number, searchTerm: string): Promi
                 id: c.id,
                 name: c.name,
                 type: 'trello_card',
-                description: c.description,
                 projectName: c.list.trello.project.name,
             });
         }
