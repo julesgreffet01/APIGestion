@@ -63,7 +63,7 @@ model UserProject {
 
 model CalendarEvent {
   id          Int      @id @default(autoincrement())
-  name        String   @unique
+  name        String
   description String?
   dateEvent   DateTime
   userId      Int

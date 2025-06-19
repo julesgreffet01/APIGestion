@@ -84,7 +84,6 @@ export default class CalendarController {
     }
 
     async update(req: FastifyRequest<{Body: {name?: string, description?: string, dateEvent?: string}, Params: {eventId: number}}>, res: FastifyReply){
-        const userId = req.user?.userId;
         const {name, description, dateEvent} = req.body;
         const eventId = Number(req.params.eventId);
         try {
@@ -98,7 +97,6 @@ export default class CalendarController {
             console.error(err)
             return res.apiResponse(500);
         }
-        if(!userId) return res.apiResponse(400)
         const dataToUpdate: Record<string, any> = {};
         if(name !== undefined) dataToUpdate.name = name;
         if(description !== undefined) dataToUpdate.description = description;

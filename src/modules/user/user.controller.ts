@@ -52,10 +52,10 @@ export default class UserController {
         const userId = req.user?.userId;
         if(!userId) return res.apiResponse(401);
         const completedStatut = await prisma.statut.findFirst({
-            where: { libelle: 'completed' }
+            where: { libelle: 'complété' }
         });
 
-        if (!completedStatut) throw new Error("Statut 'completed' non trouvé");
+        if (!completedStatut) throw new Error("Statut 'compléte' non trouvé");
         const statutId = completedStatut.id;
 
         // Récupération de toutes les dates de réalisation
