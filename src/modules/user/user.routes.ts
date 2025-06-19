@@ -10,6 +10,7 @@ const userRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     fastify.get('/', userController.find)
     fastify.get('/progressed', userController.progressed)
     fastify.get<{Params: {search: string}}>('/search/:search', userController.searchBarre)
+    fastify.get<{ Params: { projectId: number } }>('/notInProject/:projectId', userController.getAllNoInProject)
 }
 
 export default userRoutes;

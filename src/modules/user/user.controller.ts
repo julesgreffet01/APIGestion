@@ -134,4 +134,31 @@ export default class UserController {
             });
         }
     }
+
+    async getAllNoInProject(req: FastifyRequest<{ Params: { projectId: number } }>, res: FastifyReply) {
+        const projectId = Number(req.params.projectId);
+        if (!projectId) return res.apiResponse(401, 'Project ID manquant');
+        try {
+            const users = await prisma.user.findMany({
+                where: {
+                    userProjects: {
+                        none: {
+                            projectId: projectId,
+                        },
+                    },
+                },
+                select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                    firstName: true,
+                    photo: true,
+                },
+            });
+            return res.apiResponse(200, users);
+        } catch (error) {
+            console.error(error);
+            return res.apiResponse(500);
+        }
+    }
 }
