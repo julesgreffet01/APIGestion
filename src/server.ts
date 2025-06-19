@@ -6,19 +6,25 @@ import jwt from '@fastify/jwt'
 import path from 'path'
 import fastifyMultipart from '@fastify/multipart'
 import fastifyStatic from '@fastify/static'
-import authRoutes from './modules/auth/auth.routes'
 import fs from 'fs'
 import fastifyCookie from '@fastify/cookie';
 import cors from '@fastify/cors'
 
+//----- routes ---
+import userRoutes from './modules/user/user.routes'
+import authRoutes from './modules/auth/auth.routes'
+
 
 dotenv.config();
 
+// server
 const fastify: FastifyInstance = Fastify({
     requestTimeout: 5000,
     caseSensitive: true,
     logger: true
 });
+
+
 
 fastify.register(jwt, {
     secret: process.env.JWT as string,
@@ -45,11 +51,16 @@ fastify.register(fastifyStatic, {
     prefix: '/uploads/',
 })
 
+// plugins
 fastify.register(apiResponsePlugin);
 fastify.register(droitsPlugins);
 
+// routes
 fastify.register(authRoutes);
+fastify.register(userRoutes, {prefix: '/user'});
 
+
+//start du server
 const start = async () => {
     try {
         await fastify.listen({ port: 3000 });

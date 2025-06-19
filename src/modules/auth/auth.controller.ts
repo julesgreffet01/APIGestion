@@ -6,7 +6,7 @@ import path from 'path'
 import { pipeline } from 'stream'
 import { promisify } from 'util'
 import {sendMail} from '../../utils/mailer';
-import {normalizeEmail} from "./auth.helper";
+import {normalizeEmail} from "../../utils/email";
 
 const pump = promisify(pipeline)
 const prisma = new PrismaClient()
