@@ -2,10 +2,12 @@ import {FastifyRequest, FastifyReply} from 'fastify'
 import {PrismaClient} from '@prisma/client';
 import bcrypt from 'bcrypt'
 import {normalizeEmail} from "../../utils/email";
+import {searchUserItems} from "./user.helpers";
 
+const prisma = new PrismaClient()
 export default class UserController {
-    prisma = new PrismaClient()
-    async updateUser(req: FastifyRequest<{Body: {email: string, password: string, name: string, firstName: string}}>, res: FastifyReply) {
+
+    async updateUser(req: FastifyRequest<{Body: {email?: string, password?: string, name?: string, firstName?: string}}>, res: FastifyReply) {
         const { email, password, name, firstName } = req.body;
         const userId = req.user?.userId;
 
@@ -15,18 +17,18 @@ export default class UserController {
         const dataToUpdate: Record<string, any> = {};
 
         if (email !== undefined) dataToUpdate.email = normalizeEmail(email);
-        if (password !== undefined) dataToUpdate.password = bcrypt.hash(password, 10);
+        if (password !== undefined) dataToUpdate.password = await bcrypt.hash(password, 10);
         if (name !== undefined) dataToUpdate.name = name;
         if (firstName !== undefined) dataToUpdate.firstName = firstName;
 
         if (Object.keys(dataToUpdate).length === 0) {
             return res.apiResponse(401,'Aucune donnée à mettre à jour' );
         }
-
         try {
-            const updatedUser = await this.prisma.user.update({
+            const updatedUser = await prisma.user.update({
                 where: { id: userId },
                 data: dataToUpdate,
+                select: {name: true, firstName: true, email: true}
             });
             return res.apiResponse(200, updatedUser);
         } catch (error) {
@@ -38,7 +40,10 @@ export default class UserController {
     async find(req: FastifyRequest, res: FastifyReply) {
         const userId = req.user?.userId;
         if(!userId) return res.apiResponse(401);
-        const user = this.prisma.user.findUnique({where: { id: userId }})
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {name: true, firstName: true, email: true}}
+        );
         if (!user) return res.apiResponse(401);
         return res.apiResponse(200, user);
     }
@@ -46,7 +51,7 @@ export default class UserController {
     async progressed(req: FastifyRequest, res: FastifyReply) {
         const userId = req.user?.userId;
         if(!userId) return res.apiResponse(401);
-        const completedStatut = await this.prisma.statut.findFirst({
+        const completedStatut = await prisma.statut.findFirst({
             where: { libelle: 'completed' }
         });
 
@@ -55,21 +60,21 @@ export default class UserController {
 
         // Récupération de toutes les dates de réalisation
         const [trelloCards, todoTasks, ganttTasks] = await Promise.all([
-            this.prisma.trelloCard.findMany({
+            prisma.trelloCard.findMany({
                 where: {
                     statutId,
                     users: { some: { userId } }
                 },
                 select: { realDate: true }
             }),
-            this.prisma.toDoTask.findMany({
+            prisma.toDoTask.findMany({
                 where: {
                     statutId,
                     users: { some: { userId } }
                 },
                 select: { realDate: true }
             }),
-            this.prisma.ganttActivity.findMany({
+            prisma.ganttActivity.findMany({
                 where: {
                     statutId,
                     users: { some: { userId } }
@@ -98,5 +103,35 @@ export default class UserController {
         }
 
         return result;
+    }
+
+    async searchBarre(req: FastifyRequest<{Params: {search: string}}>, res: FastifyReply) {
+        try {
+            const { search } = req.params;
+            const userId = req.user?.userId;
+
+            if (!userId) {
+                return res.status(401).send({ error: 'Utilisateur non authentifié' });
+            }
+
+            if (!search || search.trim().length === 0) {
+                return res.status(400).send({ error: 'Terme de recherche requis' });
+            }
+
+            const results = await searchUserItems(userId, search.trim());
+
+            return res.send({
+                success: true,
+                searchTerm: search,
+                results
+            });
+
+        } catch (error) {
+            console.error('Erreur dans searchBarre:', error);
+            return res.status(500).send({
+                success: false,
+                error: 'Erreur interne du serveur'
+            });
+        }
     }
 }

@@ -8,7 +8,7 @@ export default fp(async function (fastify: FastifyInstance) {
 
     fastify.decorate('verifyToken', async function (this: FastifyInstance,request: FastifyRequest): Promise<boolean> {
         try {
-            await request.jwtVerify(); // 🔐 Vérifie le token depuis header/cookie
+            await request.jwtVerify();
 
             const userId = request.user?.userId;
             if (!userId) return false;
@@ -30,11 +30,6 @@ export default fp(async function (fastify: FastifyInstance) {
             where: {userId, projectId},
         });
         return count > 0;
-    });
-
-    fastify.decorate('verifyParamExist', async function (request: FastifyRequest, requiredParams: string[]): Promise<boolean> {
-        const params = request.params as Record<string, unknown>;
-        return requiredParams.every((key) => params[key] !== undefined);
     });
 
     fastify.decorate('requireRole', async function (request: FastifyRequest, roles: string[], projectId: number): Promise<boolean> {
