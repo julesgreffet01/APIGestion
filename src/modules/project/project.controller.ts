@@ -10,7 +10,7 @@ export default class ProjectController {
             const projects = await prisma.project.findMany({
                 where: {
                     delete: false,
-                    userProject: {
+                    userProjects: {
                         some: {
                             userId: userId,
                         },
@@ -33,11 +33,20 @@ export default class ProjectController {
         const userId = Number(req.user?.userId);
         if(!userId) return res.apiResponse(400);
         try {
-            await prisma.project.create({
-                name,
-                description,
-                creatorId: userId,
+            const project = await prisma.project.create({
+                data: {
+                    name,
+                    description,
+                    creatorId: userId,
+                }
             })
+            await prisma.userProject.create({
+                data: {
+                    userId,
+                    projectId: project.id,
+                    roleId: 1
+                }
+            });
             return res.apiResponse(201)
         } catch (e) {
             console.error(e);
@@ -52,7 +61,7 @@ export default class ProjectController {
         if(name !== undefined) dataToUpdate.name = name;
         if(description !== undefined) dataToUpdate.description = description;
         if (Object.keys(dataToUpdate).length === 0) {
-            return res.apiResponse(401,'Aucune donnée à mettre à jour' );
+            return res.apiResponse(400,'Aucune donnée à mettre à jour' );
         }
         try {
             await prisma.project.update({
@@ -77,8 +86,11 @@ export default class ProjectController {
             if (!project || project.creatorId !== userId) {
                 return res.apiResponse(403, 'Accès interdit');
             }
-            await prisma.project.delete({
+            await prisma.project.update({
                 where: { id: projectId },
+                data: {
+                    delete: true,
+                }
             });
             return res.apiResponse(200, 'Projet supprimé');
         } catch (e) {
@@ -87,8 +99,9 @@ export default class ProjectController {
         }
     }
 
-    async addPeople(req: FastifyRequest<{Body: {peopleId: number, roleId: number,projectId: number}}>, res: FastifyReply) {
-        const {peopleId, roleId, projectId} = req.body;
+    async addPeople(req: FastifyRequest<{Body: {peopleId: number, roleId: number}, Params: {projectId: number}}>, res: FastifyReply) {
+        const projectId = Number(req.params.projectId);
+        const {peopleId, roleId} = req.body;
         if(![peopleId, roleId, projectId].every(Boolean)) return res.apiResponse(401);
         try {
             const project = await prisma.project.findUnique({
@@ -121,8 +134,9 @@ export default class ProjectController {
         }
     }
 
-    async updatePeople(req: FastifyRequest<{Body: {peopleId: number, roleId: number,projectId: number}}>, res: FastifyReply) {
-        const {peopleId, roleId, projectId} = req.body;
+    async updatePeople(req: FastifyRequest<{Body: {peopleId: number, roleId: number}, Params: {projectId: number}}>, res: FastifyReply) {
+        const projectId = Number(req.params.projectId);
+        const {peopleId, roleId} = req.body;
         if(![peopleId, roleId, projectId].every(Boolean)) return res.apiResponse(401);
         try {
             const project = await prisma.project.findUnique({
@@ -140,14 +154,16 @@ export default class ProjectController {
                     id: peopleId
                 }
             })
-            if(![user, project, role].every(Boolean)) return res.apiResponse(500);
+            if (!user || !project || !role) return res.apiResponse(500);
             if(user.id === project.creatorId) return res.apiResponse(500)
             await prisma.userProject.update({
                 where: {
-                    projectId,
-                    userId: peopleId,
+                    userId_projectId: {
+                        userId: peopleId,
+                        projectId: projectId
+                    }
                 },
-                date: {
+                data: {
                     roleId
                 }
             })
@@ -165,7 +181,7 @@ export default class ProjectController {
             const projects = await prisma.project.findMany({
                 where: {
                     delete: false,
-                    userProject: {
+                    userProjects: {
                         some: {
                             userId: userId,
                         },
@@ -189,11 +205,7 @@ export default class ProjectController {
             const projects = await prisma.project.findMany({
                 where: {
                     delete: true,
-                    userProject: {
-                        some: {
-                            userId: userId,
-                        },
-                    },
+                    creatorId: userId,
                 },
                 orderBy: {
                     id: 'desc',
@@ -226,6 +238,29 @@ export default class ProjectController {
                     },
                 }
             })
+        } catch (e) {
+            console.error(e);
+            return res.apiResponse(500);
+        }
+    }
+
+    async restore(req: FastifyRequest<{Params: {projectId: number}}>, res: FastifyReply) {
+        const projectId = Number(req.params.projectId);
+        const userId = Number(req.user?.userId);
+        try {
+            const project = await prisma.project.findUnique({
+                where: { id: projectId },
+            });
+            if (!project || project.creatorId !== userId) {
+                return res.apiResponse(400);
+            }
+            await prisma.project.update({
+                where: { id: projectId },
+                data: {
+                    delete: false,
+                }
+            });
+            return res.apiResponse(200, 'Projet restorer');
         } catch (e) {
             console.error(e);
             return res.apiResponse(500);

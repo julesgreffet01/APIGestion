@@ -34,15 +34,27 @@ export default fp(async function (fastify: FastifyInstance) {
 
     fastify.decorate('requireRole', async function (request: FastifyRequest, roles: string[], projectId: number): Promise<boolean> {
         const userId = request.user?.userId;
-        const relation = await prisma.userProject.findFirst({
-            where: { userId, projectId },
-            select: {roleId: true}
-        });
-        if (!relation) return false;
-        const role = await prisma.role.findUnique({
-            where:{id: relation.roleId}
-        });
-        if (!role) return false;
-        return roles.includes(role.name);
+        const projId = Number(projectId);
+        try {
+            const project = await prisma.project.findUnique({
+                where : {
+                    id: projId
+                }
+            })
+            if(!project) return false;
+            const relation = await prisma.userProject.findFirst({
+                where: { userId, projectId: projId },
+                select: {roleId: true}
+            });
+            if (!relation) return false;
+            const role = await prisma.role.findUnique({
+                where:{id: relation.roleId}
+            });
+            if (!role) return false;
+            return roles.includes(role.name);
+        } catch (e) {
+            console.error(e);
+            return false
+        }
     });
 });

@@ -161,4 +161,37 @@ export default class UserController {
             return res.apiResponse(500);
         }
     }
+
+    async getAllInProject(req: FastifyRequest<{Params: {projectId: number}}>, res: FastifyReply) {
+        const projectId = Number(req.params.projectId);
+        if(!projectId) return res.apiResponse(401);
+        try {
+            const project = await prisma.project.findUnique({
+                where: {
+                    id: projectId,
+                }
+            })
+            if(!project) return res.apiResponse(401);
+            const users = await prisma.userProject.findMany({
+                where: {
+                    projectId,
+                },
+                select: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            firstName: true,
+                            email: true,
+                            photo: true,
+                        }
+                    }
+                }
+            });
+            return res.apiResponse(200, users);
+        } catch (e) {
+            console.error(e);
+            return res.apiResponse(500);
+        }
+    }
 }
