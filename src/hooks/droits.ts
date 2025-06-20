@@ -12,7 +12,7 @@ export const useVerifyToken = (): preHandlerHookHandler => {
 export const useCheckAccessProject = (): preHandlerHookHandler => {
     return async function (req: FastifyRequest, reply: FastifyReply) {
         const { projectId } = req.params as { projectId: number };
-        const isValid = await req.server.checkAccessProject(req, projectId);
+        const isValid = await req.server.checkAccessProject(req, Number(projectId));
         if (!isValid) {
             return reply.apiResponse(401, 'pas accès à ce projet');
         }
