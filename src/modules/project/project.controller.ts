@@ -218,10 +218,10 @@ export default class ProjectController {
         }
     }
 
-    async leave(req: FastifyRequest<{Body: {projectId: number}}>, res: FastifyReply) {
+    async leave(req: FastifyRequest<{Params: {projectId: number}}>, res: FastifyReply) {
         const userId = Number(req.user?.userId);
         if(!userId) return res.apiResponse(401);
-        const projectId = req.body.projectId;
+        const projectId = Number(req.params.projectId);
         try {
             const project = await prisma.project.findUnique({
                 where: {
@@ -238,6 +238,7 @@ export default class ProjectController {
                     },
                 }
             })
+            return res.apiResponse(200)
         } catch (e) {
             console.error(e);
             return res.apiResponse(500);
