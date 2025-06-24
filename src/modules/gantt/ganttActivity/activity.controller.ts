@@ -1,6 +1,6 @@
 import {FastifyRequest, FastifyReply} from 'fastify';
 import {PrismaClient} from '@prisma/client';
-import {isStrictValidDate} from './activity.helpers'
+import {isStrictValidDate} from '../../../utils/date'
 
 const prisma = new PrismaClient();
 export default class ActivityController {

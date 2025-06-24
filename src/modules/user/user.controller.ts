@@ -55,10 +55,9 @@ export default class UserController {
             where: { libelle: 'complété' }
         });
 
-        if (!completedStatut) throw new Error("Statut 'compléte' non trouvé");
+        if (!completedStatut) throw new Error("Statut 'Complété' non trouvé");
         const statutId = completedStatut.id;
 
-        // Récupération de toutes les dates de réalisation
         const [trelloCards, todoTasks, ganttTasks] = await Promise.all([
             prisma.trelloCard.findMany({
                 where: {
@@ -83,7 +82,6 @@ export default class UserController {
             })
         ]);
 
-        // Regroupement des dates dans un seul tableau
         const allDates = [
             ...trelloCards.map(t => t.realDate),
             ...todoTasks.map(t => t.realDate),
@@ -91,7 +89,9 @@ export default class UserController {
         ];
         const result: { [key: string]: number } = {};
 
-        for (const date of allDates) {
+        const validDates = allDates.filter((d): d is Date => d !== null);
+
+        for (const date of validDates) {
             const d = new Date(date);
             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 

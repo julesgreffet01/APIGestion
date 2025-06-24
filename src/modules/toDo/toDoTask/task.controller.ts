@@ -1,5 +1,6 @@
 import {FastifyRequest, FastifyReply} from 'fastify';
 import {PrismaClient} from '@prisma/client';
+import {isStrictValidDate} from '../../../utils/date'
 
 const prisma = new PrismaClient();
 export default class taskController {
@@ -39,8 +40,8 @@ export default class taskController {
         }
     }
 
-    async create(req: FastifyRequest<{ Params: { todoId: number }, Body: { name: string, userIds?: number[], realDate?: string } }>, res: FastifyReply) {
-        const todoId = Number(req.params.todoId);
+    async create(req: FastifyRequest<{ Params: { toDoId: number }, Body: { name: string, userIds?: number[], realDate?: string } }>, res: FastifyReply) {
+        const todoId = Number(req.params.toDoId);
         const { name, userIds, realDate } = req.body;
         if (!todoId || !name || name.trim().length === 0) return res.apiResponse(401);
         try {
@@ -73,7 +74,7 @@ export default class taskController {
                 position: nextPosition,
                 todoId
             };
-            if (realDate) {
+            if (realDate && isStrictValidDate(realDate)) {
                 data.realDate = new Date(realDate);
             }
             const newTask = await prisma.toDoTask.create({ data });
@@ -87,7 +88,7 @@ export default class taskController {
                     skipDuplicates: true
                 });
             }
-            return res.apiResponse(201, newTask);
+            return res.apiResponse(201);
         } catch (e) {
             console.error(e);
             return res.apiResponse(500);
@@ -102,7 +103,7 @@ export default class taskController {
         }
         const data: any = {};
         if (name !== undefined) data.name = name;
-        if (realDate !== undefined) data.realDate = new Date(realDate);
+        if (realDate !== undefined && isStrictValidDate(realDate)) data.realDate = new Date(realDate);
         if (Object.keys(data).length === 0) {
             return res.apiResponse(400, { message: "Aucune donnée à mettre à jour." });
         }
@@ -111,7 +112,7 @@ export default class taskController {
                 where: { id: taskId },
                 data
             });
-            return res.apiResponse(200, updatedTask);
+            return res.apiResponse(200);
         } catch (e) {
             console.error(e);
             return res.apiResponse(500);
@@ -142,7 +143,7 @@ export default class taskController {
         const todoId  = Number(req.params.toDoId);
         const { orderedTaskIds } = req.body;
         if (!todoId || !Array.isArray(orderedTaskIds)) {
-            return res.apiResponse(400, { message: "Requête invalide." });
+            return res.apiResponse(400);
         }
         try {
             const validTasks = await prisma.toDoTask.findMany({
@@ -154,7 +155,7 @@ export default class taskController {
             });
             const validTaskIds = validTasks.map(t => t.id);
             if (validTaskIds.length !== orderedTaskIds.length) {
-                return res.apiResponse(403, { message: "Certaines tâches ne sont pas valides ou n'appartiennent pas à ce ToDo." });
+                return res.apiResponse(403);
             }
             for (let index = 0; index < orderedTaskIds.length; index++) {
                 const taskId = orderedTaskIds[index];
@@ -163,7 +164,7 @@ export default class taskController {
                     data: { position: index + 1 }
                 });
             }
-            return res.apiResponse(200, { message: "Ordre mis à jour." });
+            return res.apiResponse(200);
         } catch (e) {
             console.error(e);
             return res.apiResponse(500);
@@ -182,7 +183,7 @@ export default class taskController {
                 where: { id: taskId }
             });
 
-            return res.apiResponse(200, { message: "Tâche supprimée avec succès." });
+            return res.apiResponse(200);
         } catch (e) {
             console.error(e);
             return res.apiResponse(500);
