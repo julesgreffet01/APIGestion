@@ -7,7 +7,7 @@ export function useCheckActivityInGantt(){
     return async function(req: FastifyRequest<{ Params: { ganttId: number; activityId: number } }>, res: FastifyReply){
         const activityId = Number(req.params.activityId);
         const ganttId = Number(req.params.ganttId);
-        if (!ganttId || !activityId || !ganttId) {
+        if (!ganttId || !activityId) {
             return res.apiResponse(500);
         }
         try {

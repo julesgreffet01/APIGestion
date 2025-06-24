@@ -118,9 +118,9 @@ export default class taskController {
         }
     }
 
-    async realised(req: FastifyRequest<{ Params: { taskId: number } }> & { user: { userId: number } }, res: FastifyReply) {
+    async realised(req: FastifyRequest<{ Params: { taskId: number } }>, res: FastifyReply) {
         const taskId = Number(req.params.taskId);
-        const userId = req.user.userId;
+        const userId = req.user?.userId;
         if (!taskId || !userId) return res.apiResponse(401);
         try {
             const updatedTask = await prisma.toDoTask.update({
@@ -138,8 +138,8 @@ export default class taskController {
         }
     }
 
-    async reorder(req: FastifyRequest<{ Params: { todoId: number }, Body: { orderedTaskIds: number[] } }>, res: FastifyReply) {
-        const { todoId } = req.params;
+    async reorder(req: FastifyRequest<{ Params: { toDoId: number }, Body: { orderedTaskIds: number[] } }>, res: FastifyReply) {
+        const todoId  = Number(req.params.toDoId);
         const { orderedTaskIds } = req.body;
         if (!todoId || !Array.isArray(orderedTaskIds)) {
             return res.apiResponse(400, { message: "Requête invalide." });
@@ -170,4 +170,22 @@ export default class taskController {
         }
     }
 
+    async delete(req: FastifyRequest<{ Params: { taskId: number } }>, res: FastifyReply) {
+        const taskId = Number(req.params.taskId);
+        if (!taskId) return res.apiResponse(401);
+        try {
+            await prisma.toDoTaskUser.deleteMany({
+                where: { taskId }
+            });
+
+            await prisma.toDoTask.delete({
+                where: { id: taskId }
+            });
+
+            return res.apiResponse(200, { message: "Tâche supprimée avec succès." });
+        } catch (e) {
+            console.error(e);
+            return res.apiResponse(500);
+        }
+    }
 }

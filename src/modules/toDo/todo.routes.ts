@@ -2,6 +2,7 @@ import { FastifyPluginAsync, FastifyInstance } from 'fastify'
 import TodoController from "./todo.controller";
 import {useRequireRole} from '../../hooks/droits'
 import {useCheckTodoInProject} from "./todo.helpers";
+import taskRoutes from "./toDoTask/task.routes";
 
 const todoRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const todoController = new TodoController()
@@ -10,5 +11,9 @@ const todoRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     fastify.post<{ Params: { projectId: number }, Body: { name: string } }>('/', {preHandler: useRequireRole(["Admin"])}, todoController.create)
     fastify.put<{ Body: { name: string }, Params: { toDoId: number, projectId: number } }>('/:toDoId', {preHandler: [useRequireRole(["Admin"]), useCheckTodoInProject()]}, todoController.update)
     fastify.delete<{ Params: { toDoId: number, projectId: number } }>('/:toDoId', {preHandler: [useRequireRole(["Admin"]), useCheckTodoInProject()]}, todoController.delete)
+
+    fastify.register(async function (projectScoped) {
+        await projectScoped.register(taskRoutes, { prefix: '/:toDoId/task' });
+    });
 }
 export default todoRoutes;
