@@ -181,12 +181,12 @@ model ToDoTask {
   name          String
   position      Int
   realised      Boolean     @default(false)
-  realDate      DateTime
-  realisatorId  Int
+  realDate      DateTime?
+  realisatorId  Int?
   todoId        Int
   statutId      Int         @default(1)
 
-  realisator    User        @relation("ToDoTaskUser", fields: [realisatorId], references: [id])
+  realisator    User?        @relation("ToDoTaskUser", fields: [realisatorId], references: [id])
   todo          ToDo        @relation(fields: [todoId], references: [id])
   statut        Statut      @relation(fields: [statutId], references: [id])
   users         ToDoTaskUser[]

@@ -1,4 +1,4 @@
-import {FastifyPluginAsync, FastifyInstance, FastifyRequest, FastifyReply} from 'fastify'
+import {FastifyPluginAsync, FastifyInstance} from 'fastify'
 import ActivityController from "./activity.controller";
 import {useRequireRole} from '../../../hooks/droits'
 import {useCheckActivityInGantt} from "./activity.helpers";
