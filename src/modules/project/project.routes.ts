@@ -2,6 +2,7 @@ import { FastifyPluginAsync, FastifyInstance } from 'fastify'
 import ProjectController from "./project.controller";
 import {useVerifyToken, useRequireRole, useCheckAccessProject} from '../../hooks/droits'
 import ganttRoutes from "../gantt/gantt.routes";
+import todoRoutes from "../toDo/todo.routes";
 
 const projectRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const projectController = new ProjectController();
@@ -21,6 +22,7 @@ const projectRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     fastify.register(async function (projectScoped) {
         projectScoped.addHook('preHandler', useCheckAccessProject())
         await projectScoped.register(ganttRoutes, { prefix: '/:projectId/gantt' });
+        await projectScoped.register(todoRoutes, {prefix: '/:projectId/todo'});
     });
 }
 

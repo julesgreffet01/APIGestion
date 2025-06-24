@@ -1,6 +1,6 @@
 import { FastifyPluginAsync, FastifyInstance } from 'fastify'
 import GanttController from "./gantt.controller";
-import {useCheckAccessProject, useRequireRole} from '../../hooks/droits'
+import {useRequireRole} from '../../hooks/droits'
 import {useCheckGanttInProject} from "./gantt.helpers";
 import activityRoutes from "./ganttActivity/activity.routes";
 
