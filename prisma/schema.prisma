@@ -149,7 +149,7 @@ model TrelloCard {
   realised      Boolean           @default(false)
   realisatorId  Int
   listId        Int
-  statutId      Int
+  statutId      Int                 @default(1)
 
   realisator    User              @relation("TrelloCardRealisator", fields: [realisatorId], references: [id])
   list          TrelloList        @relation(fields: [listId], references: [id])
@@ -184,7 +184,7 @@ model ToDoTask {
   realDate      DateTime
   realisatorId  Int
   todoId        Int
-  statutId      Int
+  statutId      Int         @default(1)
 
   realisator    User        @relation("ToDoTaskUser", fields: [realisatorId], references: [id])
   todo          ToDo        @relation(fields: [todoId], references: [id])
@@ -218,7 +218,7 @@ model GanttActivity {
   startDate    DateTime
   endDate      DateTime
   progress     Int                      @default(0)
-  statutId     Int
+  statutId     Int                      @default(1)
   ganttId      Int
 
   statut       Statut                   @relation(fields: [statutId], references: [id])
