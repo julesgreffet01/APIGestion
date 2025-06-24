@@ -15,6 +15,8 @@ import userRoutes from './modules/user/user.routes'
 import authRoutes from './modules/auth/auth.routes'
 import calendarRoutes from './modules/calendar/calendar.routes'
 import projectRoutes from './modules/project/project.routes'
+import roleRoutes from './modules/role/role.routes'
+import statutRoutes from "./modules/statut/statut.routes";
 
 
 dotenv.config();
@@ -62,7 +64,8 @@ fastify.register(authRoutes);
 fastify.register(userRoutes, {prefix: '/user'});
 fastify.register(calendarRoutes, {prefix: '/calendar'});
 fastify.register(projectRoutes, {prefix: '/project'});
-
+fastify.register(roleRoutes, {prefix: '/role'});
+fastify.register(statutRoutes, {prefix: '/statut'});
 
 //start du server
 const start = async () => {
