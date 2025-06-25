@@ -143,15 +143,15 @@ model TrelloList {
 model TrelloCard {
   id            Int               @id @default(autoincrement())
   name          String
-  description   String
-  realDate      DateTime
+  description   String?
+  realDate      DateTime?
   position      Int
   realised      Boolean           @default(false)
-  realisatorId  Int
+  realisatorId  Int?
   listId        Int
   statutId      Int                 @default(1)
 
-  realisator    User              @relation("TrelloCardRealisator", fields: [realisatorId], references: [id])
+  realisator    User?              @relation("TrelloCardRealisator", fields: [realisatorId], references: [id])
   list          TrelloList        @relation(fields: [listId], references: [id])
   statut        Statut            @relation(fields: [statutId], references: [id])
   users         TrelloCardUser[]
