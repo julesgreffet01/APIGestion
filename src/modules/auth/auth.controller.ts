@@ -65,21 +65,8 @@ export default class AuthController {
             return reply.apiResponse(401, 'Email ou mot de passe incorrect');
         }
 
-        //--------- tokens ------------
+        //--------- token ------------
         const token = await reply.jwtSign({ userId: user!.id }, { expiresIn: '5h' });
-
-        const refreshToken = await reply.jwtSign(
-            { userId: user!.id },
-            { expiresIn: '60d' }
-        );
-
-        reply.setCookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: false,        //todo true en prod
-            sameSite: 'none',
-            path: '/extension/refresh',
-            maxAge: 60 * 60 * 24 * 60,
-        });
 
         //---------- OK -------------
         return reply.apiResponse(200, { token });
