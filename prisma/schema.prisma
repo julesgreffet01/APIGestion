@@ -14,14 +14,11 @@ model User {
   name            String
   firstName       String
   photo           String?
-  salt            String
 
   createdProjects Project[]        @relation("CreatedProjects")
   userProjects    UserProject[]
   calendarEvents  CalendarEvent[]  @relation("UserCalendar")
   vaultPasswords  VaultPassword[]  @relation("UserVault")
-  ignoredSites    IgnoredSite[]    @relation("UserIgnoredSite")
-  devices         Device[]         @relation("UserDevice")
   trelloCards     TrelloCardUser[]
   realisations    TrelloCard[]     @relation("TrelloCardRealisator")
   todoTasks       ToDoTaskUser[]
@@ -74,31 +71,11 @@ model CalendarEvent {
 model VaultPassword {
   id        Int      @id @default(autoincrement())
   siteName  String
-  url       String
   password  String
   username  String
-  iv        String
   userId    Int
 
   user      User     @relation("UserVault", fields: [userId], references: [id])
-}
-
-model IgnoredSite {
-  id        Int      @id @default(autoincrement())
-  domain    String
-  userId    Int
-
-  user      User     @relation("UserIgnoredSite", fields: [userId], references: [id])
-}
-
-model Device {
-  id        Int      @id @default(autoincrement())
-  name      String
-  key       String
-  iv        String
-  userId    Int
-
-  user      User     @relation("UserDevice", fields: [userId], references: [id])
 }
 
 model LoginLog {

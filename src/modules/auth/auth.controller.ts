@@ -138,7 +138,6 @@ export default class AuthController {
                 name: name!,
                 firstName: firstName!,
                 photo: photoFileName ? `/uploads/${photoFileName}` : null,
-                salt,
             },
         })
 
@@ -185,22 +184,4 @@ export default class AuthController {
         return reply.apiResponse(200, 'changement effectue')
     }
 
-    async refreshToken(req: FastifyRequest, reply: FastifyReply) {
-        try {
-            const { refreshToken } = req.cookies;
-
-            if (!refreshToken) {
-                return reply.code(401).send({ message: 'Refresh token manquant' });
-            }
-
-            const payload = this.fastify.jwt.verify<{ userId: number }>(refreshToken);
-            const userId = payload.userId;
-
-            const newAccessToken = await reply.jwtSign({ userId }, { expiresIn: '5h' });
-
-            return reply.code(200).send({ token: newAccessToken });
-        } catch (err) {
-            return reply.code(401).send({ message: 'Refresh token invalide ou expiré' });
-        }
-    }
 }

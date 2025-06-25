@@ -9,6 +9,5 @@ const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     fastify.post('/register', authController.register)
     fastify.post<{ Body: { email: string }}>('/recuperationMDP', authController.recuperationMDP)
     fastify.post<{ Body: { newPassword: string } }>('/reinitialisationMDP',{preHandler: [useVerifyToken()] }, authController.reinitialisationMDP)
-    fastify.post('/extension/refresh', authController.refreshToken)
 }
 export default authRoutes;
