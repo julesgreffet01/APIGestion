@@ -142,14 +142,14 @@ export default class taskController {
     async reorder(req: FastifyRequest<{ Params: { toDoId: number }, Body: { orderedTaskIds: number[] } }>, res: FastifyReply) {
         const todoId  = Number(req.params.toDoId);
         const { orderedTaskIds } = req.body;
-        if (!todoId || !Array.isArray(orderedTaskIds)) {
+        if (isNaN(todoId) || !orderedTaskIds.length) {
             return res.apiResponse(400);
         }
         try {
             const validTasks = await prisma.toDoTask.findMany({
                 where: {
                     id: { in: orderedTaskIds },
-                    todoId: Number(todoId)
+                    todoId: todoId
                 },
                 select: { id: true }
             });

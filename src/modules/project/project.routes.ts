@@ -3,6 +3,7 @@ import ProjectController from "./project.controller";
 import {useVerifyToken, useRequireRole, useCheckAccessProject} from '../../hooks/droits'
 import ganttRoutes from "../gantt/gantt.routes";
 import todoRoutes from "../toDo/todo.routes";
+import trelloRoutes from "../trello/trello.routes";
 
 const projectRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const projectController = new ProjectController();
@@ -23,6 +24,7 @@ const projectRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         projectScoped.addHook('preHandler', useCheckAccessProject())
         await projectScoped.register(ganttRoutes, { prefix: '/:projectId/gantt' });
         await projectScoped.register(todoRoutes, {prefix: '/:projectId/todo'});
+        await projectScoped.register(trelloRoutes, {prefix: '/:projectId/trello'});
     });
 }
 
