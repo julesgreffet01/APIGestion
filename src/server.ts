@@ -17,6 +17,7 @@ import calendarRoutes from './modules/calendar/calendar.routes'
 import projectRoutes from './modules/project/project.routes'
 import roleRoutes from './modules/role/role.routes'
 import statutRoutes from "./modules/statut/statut.routes";
+import vaultRoutes from "./modules/vaultPassword/vault.routes";
 
 
 dotenv.config();
@@ -66,6 +67,7 @@ fastify.register(calendarRoutes, {prefix: '/calendar'});
 fastify.register(projectRoutes, {prefix: '/project'});
 fastify.register(roleRoutes, {prefix: '/role'});
 fastify.register(statutRoutes, {prefix: '/statut'});
+fastify.register(vaultRoutes, {prefix: '/password'});
 
 //start du server
 const start = async () => {
