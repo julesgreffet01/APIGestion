@@ -7,8 +7,8 @@ import {searchUserItems} from "./user.helpers";
 const prisma = new PrismaClient()
 export default class UserController {
 
-    async updateUser(req: FastifyRequest<{Body: {email?: string, password?: string, name?: string, firstName?: string}}>, res: FastifyReply) {
-        const { email, password, name, firstName } = req.body;
+    async updateUser(req: FastifyRequest<{Body: {email?: string, name?: string, firstName?: string}}>, res: FastifyReply) {
+        const { email, name, firstName } = req.body;
         const userId = req.user?.userId;
 
         if (!userId) {
@@ -17,7 +17,6 @@ export default class UserController {
         const dataToUpdate: Record<string, any> = {};
 
         if (email !== undefined) dataToUpdate.email = normalizeEmail(email);
-        if (password !== undefined) dataToUpdate.password = await bcrypt.hash(password, 10);
         if (name !== undefined) dataToUpdate.name = name;
         if (firstName !== undefined) dataToUpdate.firstName = firstName;
 
@@ -42,7 +41,7 @@ export default class UserController {
         if(!userId) return res.apiResponse(401);
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: {name: true, firstName: true, email: true}}
+            select: {name: true, firstName: true, email: true, salt: true, passwordKey: true, photo: true}}
         );
         if (!user) return res.apiResponse(401);
         return res.apiResponse(200, user);
@@ -189,6 +188,34 @@ export default class UserController {
                 }
             });
             return res.apiResponse(200, users);
+        } catch (e) {
+            console.error(e);
+            return res.apiResponse(500);
+        }
+    }
+
+    async changePassword(req: FastifyRequest<{Body: {newPassword: string, newKey: string}}>, res: FastifyReply) {
+        const userId = req.user?.userId;
+        const {newPassword, newKey} = req.body
+        if(!userId) return res.apiResponse(400)
+        if(isNaN(userId) || !newPassword.trim().length || !newKey.trim().length) return res.apiResponse(400)
+        try {
+            const user = await prisma.user.findUnique({
+                where: {
+                    id: userId,
+                }
+            })
+            if(!user) return res.apiResponse(401)
+            const passHashed = await bcrypt.hash(newPassword, 10);
+            await prisma.user.update({
+                where: {
+                    id: userId
+                }, data: {
+                    password: passHashed,
+                    passwordKey: newKey
+                }
+            })
+            return res.apiResponse(200, passHashed);
         } catch (e) {
             console.error(e);
             return res.apiResponse(500);

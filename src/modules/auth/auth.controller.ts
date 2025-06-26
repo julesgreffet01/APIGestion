@@ -1,4 +1,4 @@
-import {FastifyRequest, FastifyReply, FastifyInstance} from 'fastify'
+import {FastifyRequest, FastifyReply} from 'fastify'
 import {PrismaClient} from '@prisma/client';
 import bcrypt from 'bcrypt'
 import fs from 'fs'
@@ -12,7 +12,6 @@ const pump = promisify(pipeline)
 const prisma = new PrismaClient()
 
 export default class AuthController {
-    constructor(private fastify: FastifyInstance) {}
 
     async login(req: FastifyRequest<{ Body: { email: string; password: string } }>, reply: FastifyReply) {
         const ip = req.ip;
@@ -73,12 +72,13 @@ export default class AuthController {
     }
 
     async register(req: FastifyRequest, reply: FastifyReply) {
-        // 1. Préparation
         type UserData = {
             email?: string
             password?: string
             name?: string
             firstName?: string
+            passwordKey?: string,
+            salt?: string
         }
         const userData: UserData = {}
         let photoFileName: string | null = null
@@ -97,15 +97,19 @@ export default class AuthController {
                 const filePath = path.join(__dirname, '..', 'uploads', photoFileName)
                 await pump(part.file, fs.createWriteStream(filePath))
             } else if (part.type === 'field') {
-                userData[part.fieldname as keyof UserData] = part.value as string
+                if (["email", "password", "name", "firstName", "passwordKey"].includes(part.fieldname)) {
+                    userData[part.fieldname as keyof UserData] = part.value as string;
+                }
             }
         }
 
         // 3. Validation des champs requis
-        let { email, password, name, firstName } = userData
+        let { email, password, name, firstName, passwordKey } = userData
         if (![email, password, name, firstName].every(Boolean)) {
             return reply.apiResponse(400, 'Tous les champs sont requis')
         }
+
+        if(!passwordKey) return reply.apiResponse(400)
 
         // 4. Vérification unicité email
         email = normalizeEmail(email as string);
@@ -125,6 +129,8 @@ export default class AuthController {
                 name: name!,
                 firstName: firstName!,
                 photo: photoFileName ? `/uploads/${photoFileName}` : null,
+                passwordKey,
+                salt
             },
         })
 
@@ -132,7 +138,7 @@ export default class AuthController {
         if (!newUser) {
             return reply.apiResponse(404)
         }
-        return reply.apiResponse(201, 'Compte créé avec succès')
+        return reply.apiResponse(201)
     }
 
 
@@ -147,7 +153,6 @@ export default class AuthController {
         if (!user) {
             return reply.apiResponse(404);
         }
-        console.log("giver : "+process.env.JWT)
         const token = await reply.jwtSign(
             { userId: user.id },
             { expiresIn: '15m' }

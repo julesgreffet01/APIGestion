@@ -14,6 +14,8 @@ model User {
   name            String
   firstName       String
   photo           String?
+  passwordKey     String
+  salt            String
 
   createdProjects Project[]        @relation("CreatedProjects")
   userProjects    UserProject[]
@@ -73,6 +75,7 @@ model VaultPassword {
   siteName  String
   password  String
   username  String
+  iv        String
   userId    Int
 
   user      User     @relation("UserVault", fields: [userId], references: [id])

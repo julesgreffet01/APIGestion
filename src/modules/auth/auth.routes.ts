@@ -3,7 +3,7 @@ import AuthController from './auth.controller'
 import {useVerifyToken} from '../../hooks/droits'
 
 const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-    const authController = new AuthController(fastify)
+    const authController = new AuthController()
 
     fastify.post<{ Body: { email: string; password: string } }>('/login', authController.login)
     fastify.post('/register', authController.register)
