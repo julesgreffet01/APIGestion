@@ -77,51 +77,59 @@ export default class AuthController {
             password?: string
             name?: string
             firstName?: string
-            passwordKey?: string,
-            salt?: string
+            passwordKey?: string
+            keySalt?: string  // 🔑 PBKDF2 salt pour le chiffrement
+            iv?: string       // 🔑 IV AES-GCM
         }
+
         const userData: UserData = {}
         let photoFileName: string | null = null
-        const ALLOWED_EXTS = ['.jpg', '.jpeg', '.png']
+        const ALLOWED_EXTS = [".jpg", ".jpeg", ".png"]
 
-        // 2. Parcours des parties (fichiers + champs)
+        // 2. Parcours des parties
         for await (const part of req.parts()) {
-            if (part.type === 'file') {
-                const filename = part.filename ?? ''
+            if (part.type === "file") {
+                const filename = part.filename ?? ""
                 const ext = path.extname(filename).toLowerCase()
                 if (!ALLOWED_EXTS.includes(ext)) {
-                    return reply.apiResponse(400, 'Format de fichier non supporté (jpg, png)')
+                    return reply.apiResponse(400, "Format de fichier non supporté (jpg, png)")
                 }
-                // Génère un nom sûr
                 photoFileName = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`
-                const filePath = path.join(__dirname, '..', 'uploads', photoFileName)
+                const filePath = path.join(__dirname, "..", "uploads", photoFileName)
                 await pump(part.file, fs.createWriteStream(filePath))
-            } else if (part.type === 'field') {
-                if (["email", "password", "name", "firstName", "passwordKey"].includes(part.fieldname)) {
-                    userData[part.fieldname as keyof UserData] = part.value as string;
+            } else if (part.type === "field") {
+                if (
+                    ["email", "password", "name", "firstName", "passwordKey", "keySalt", "iv"].includes(
+                        part.fieldname
+                    )
+                ) {
+                    userData[part.fieldname as keyof UserData] = part.value as string
                 }
             }
         }
 
         // 3. Validation des champs requis
-        let { email, password, name, firstName, passwordKey } = userData
-        if (![email, password, name, firstName].every(Boolean)) {
-            return reply.apiResponse(400, 'Tous les champs sont requis')
+        let { email, password, name, firstName, passwordKey, keySalt, iv } = userData
+
+        if (![email, password, name, firstName, passwordKey, keySalt, iv].every(Boolean)) {
+            return reply.apiResponse(400, "Tous les champs sont requis (clé, salt, iv inclus)")
         }
 
-        if(!passwordKey) return reply.apiResponse(400)
+        const safePasswordKey = passwordKey!
+        const safeKeySalt = keySalt!
+        const safeIv = iv!
 
-        // 4. Vérification unicité email
-        email = normalizeEmail(email as string);
+        // 4. Vérifier unicité email
+        email = normalizeEmail(email as string)
         if (await prisma.user.findUnique({ where: { email } })) {
-            return reply.apiResponse(400, 'Email déjà utilisé')
+            return reply.apiResponse(400, "Email déjà utilisé")
         }
 
-        // 5. Génération du sel et du hash
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(password!, salt)
+        // 5. Génération du sel BCRYPT et hash
+        const bcryptSalt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(password!, bcryptSalt)
 
-        // 6. Création de l’utilisateur
+        // 6. Création de l’utilisateur avec keySalt et iv stockés
         const newUser = await prisma.user.create({
             data: {
                 email: email!,
@@ -129,8 +137,10 @@ export default class AuthController {
                 name: name!,
                 firstName: firstName!,
                 photo: photoFileName ? `/uploads/${photoFileName}` : null,
-                passwordKey,
-                salt
+                passwordKey: safePasswordKey,
+                keySalt: safeKeySalt,
+                iv: safeIv,
+                salt: bcryptSalt,
             },
         })
 
@@ -140,6 +150,7 @@ export default class AuthController {
         }
         return reply.apiResponse(201)
     }
+
 
 
     async recuperationMDP(req: FastifyRequest<{ Body: { email: string }}>, reply: FastifyReply) {

@@ -16,6 +16,8 @@ model User {
   photo           String?
   passwordKey     String
   salt            String
+  keySalt         String
+  iv              String
 
   createdProjects Project[]        @relation("CreatedProjects")
   userProjects    UserProject[]
