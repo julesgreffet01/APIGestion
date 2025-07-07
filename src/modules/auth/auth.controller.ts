@@ -95,7 +95,8 @@ export default class AuthController {
                     return reply.apiResponse(400, "Format de fichier non supporté (jpg, png)")
                 }
                 photoFileName = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`
-                const filePath = path.join(__dirname, "..", "uploads", photoFileName)
+                const uploadsPath = path.join(process.cwd(), 'uploads')
+                const filePath = path.join(uploadsPath, photoFileName)
                 await pump(part.file, fs.createWriteStream(filePath))
             } else if (part.type === "field") {
                 if (
@@ -137,10 +138,10 @@ export default class AuthController {
                 name: name!,
                 firstName: firstName!,
                 photo: photoFileName ? `/uploads/${photoFileName}` : null,
-                passwordKey: safePasswordKey,
-                keySalt: safeKeySalt,
-                iv: safeIv,
-                salt: bcryptSalt,
+                passwordKey: safePasswordKey, // clé random chiffrée
+                keySalt: safeKeySalt,         // salt PBKDF2
+                iv: safeIv,                   // iv AES-GCM
+                salt: bcryptSalt,         // sel bcrypt
             },
         })
 
