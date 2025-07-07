@@ -4,7 +4,7 @@ export const useVerifyToken = (): preHandlerHookHandler => {
     return async function (req: FastifyRequest, reply: FastifyReply) {
         const isValid = await req.server.verifyToken(req);
         if (!isValid) {
-            return reply.apiResponse(401, 'token invalid');
+            return reply.apiResponse(405, 'token invalid');
         }
     };
 };

@@ -10,6 +10,7 @@ export default fp(async function (fastify: FastifyInstance) {
             401: 'Non autorisé',
             403: 'Accès interdit',
             404: 'Ressource introuvable',
+            405: 'probleme de token',
             500: 'Erreur interne du serveur',
         }
 
