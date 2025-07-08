@@ -175,7 +175,9 @@ export default class AuthController {
 
     async reinitialisationMDP(req: FastifyRequest<{ Body: { newPassword: string }}>, reply: FastifyReply) {
         const newPassword = req.body.newPassword
+        console.log('test')
         await req.jwtVerify();
+        console.log('test2')
         const userId = req.user?.userId;
         const realPassword = await bcrypt.hash(newPassword, 10)
         const newUser = await prisma.user.update({

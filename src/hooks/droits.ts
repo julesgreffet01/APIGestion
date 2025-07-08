@@ -2,6 +2,7 @@ import {FastifyRequest, FastifyReply, preHandlerHookHandler} from 'fastify'
 
 export const useVerifyToken = (): preHandlerHookHandler => {
     return async function (req: FastifyRequest, reply: FastifyReply) {
+        console.log('test verify token')
         const isValid = await req.server.verifyToken(req);
         if (!isValid) {
             return reply.apiResponse(405, 'token invalid');

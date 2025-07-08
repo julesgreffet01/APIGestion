@@ -6,6 +6,7 @@ export default class ProjectController {
     async getAllRecents(req: FastifyRequest, res: FastifyReply) {
         const userId = req.user?.userId;
         if (!userId) return res.apiResponse(400);
+
         try {
             const projects = await prisma.project.findMany({
                 where: {
@@ -20,7 +21,20 @@ export default class ProjectController {
                     creator: {
                         select: {
                             name: true,
-                            firstName: true
+                            firstName: true,
+                        },
+                    },
+                    userProjects: {
+                        select: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    firstName: true,
+                                    photo: true,
+                                    email: true,
+                                },
+                            },
                         },
                     },
                 },
@@ -29,12 +43,54 @@ export default class ProjectController {
                 },
                 take: 3,
             });
-            return res.apiResponse(200, projects);
+
+            const projectsWithProgress = await Promise.all(
+                projects.map(async (project) => {
+                    const [totalTodo, doneTodo, totalTrello, doneTrello, totalGantt, doneGantt] = await Promise.all([
+                        prisma.toDoTask.count({
+                            where: { todo: { projectId: project.id } },
+                        }),
+                        prisma.toDoTask.count({
+                            where: { todo: { projectId: project.id }, statutId: 3 },
+                        }),
+                        prisma.trelloCard.count({
+                            where: { list: { trello: { projectId: project.id } } },
+                        }),
+                        prisma.trelloCard.count({
+                            where: { list: { trello: { projectId: project.id } }, statutId: 3 },
+                        }),
+                        prisma.ganttActivity.count({
+                            where: { gantt: { projectId: project.id } },
+                        }),
+                        prisma.ganttActivity.count({
+                            where: { gantt: { projectId: project.id }, statutId: 3 },
+                        }),
+                    ]);
+
+                    const total = totalTodo + totalTrello + totalGantt;
+                    const done = doneTodo + doneTrello + doneGantt;
+                    const progress = total === 0 ? 0 : Math.round((done / total) * 100);
+
+                    // Extraire les users du champ userProjects
+                    const users = project.userProjects.map((up) => up.user);
+
+                    return {
+                        ...project,
+                        progress,
+                        users,
+                    };
+                })
+            );
+
+            return res.apiResponse(200, projectsWithProgress);
+
         } catch (e) {
             console.error(e);
             return res.apiResponse(500);
         }
     }
+
+
 
     async create(req: FastifyRequest<{ Body: { name: string, description: string } }>, res: FastifyReply) {
         const {name, description} = req.body;
