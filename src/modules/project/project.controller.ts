@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 export default class ProjectController {
     async getAllRecents(req: FastifyRequest, res: FastifyReply) {
         const userId = req.user?.userId;
-        if(!userId) return res.apiResponse(400);
+        if (!userId) return res.apiResponse(400);
         try {
             const projects = await prisma.project.findMany({
                 where: {
@@ -16,10 +16,18 @@ export default class ProjectController {
                         },
                     },
                 },
+                include: {
+                    creator: {
+                        select: {
+                            name: true,
+                            firstName: true
+                        },
+                    },
+                },
                 orderBy: {
                     id: 'desc',
                 },
-                take: 4,
+                take: 3,
             });
             return res.apiResponse(200, projects);
         } catch (e) {
@@ -28,10 +36,10 @@ export default class ProjectController {
         }
     }
 
-    async create(req: FastifyRequest<{Body: {name: string, description: string}}>, res: FastifyReply) {
+    async create(req: FastifyRequest<{ Body: { name: string, description: string } }>, res: FastifyReply) {
         const {name, description} = req.body;
         const userId = Number(req.user?.userId);
-        if(!userId) return res.apiResponse(400);
+        if (!userId) return res.apiResponse(400);
         try {
             const project = await prisma.project.create({
                 data: {
@@ -54,14 +62,17 @@ export default class ProjectController {
         }
     }
 
-    async update(req: FastifyRequest<{Body: {name?: string, description?: string}, Params: {projectId: number}}>, res: FastifyReply) {
+    async update(req: FastifyRequest<{
+        Body: { name?: string, description?: string },
+        Params: { projectId: number }
+    }>, res: FastifyReply) {
         const {name, description} = req.body;
         const projectId = Number(req.params.projectId);
         const dataToUpdate: Record<string, any> = {};
-        if(name !== undefined) dataToUpdate.name = name;
-        if(description !== undefined) dataToUpdate.description = description;
+        if (name !== undefined) dataToUpdate.name = name;
+        if (description !== undefined) dataToUpdate.description = description;
         if (Object.keys(dataToUpdate).length === 0) {
-            return res.apiResponse(400,'Aucune donnée à mettre à jour' );
+            return res.apiResponse(400, 'Aucune donnée à mettre à jour');
         }
         try {
             await prisma.project.update({
@@ -76,18 +87,19 @@ export default class ProjectController {
             return res.apiResponse(500);
         }
     }
-    async delete(req: FastifyRequest<{Params: {projectId: number}}>, res:FastifyReply){
+
+    async delete(req: FastifyRequest<{ Params: { projectId: number } }>, res: FastifyReply) {
         const projectId = Number(req.params.projectId);
         const userId = Number(req.user?.userId);
         try {
             const project = await prisma.project.findUnique({
-                where: { id: projectId },
+                where: {id: projectId},
             });
             if (!project || project.creatorId !== userId) {
                 return res.apiResponse(403, 'Accès interdit');
             }
             await prisma.project.update({
-                where: { id: projectId },
+                where: {id: projectId},
                 data: {
                     delete: true,
                 }
@@ -99,10 +111,13 @@ export default class ProjectController {
         }
     }
 
-    async addPeople(req: FastifyRequest<{Body: {peopleId: number, roleId: number}, Params: {projectId: number}}>, res: FastifyReply) {
+    async addPeople(req: FastifyRequest<{
+        Body: { peopleId: number, roleId: number },
+        Params: { projectId: number }
+    }>, res: FastifyReply) {
         const projectId = Number(req.params.projectId);
         const {peopleId, roleId} = req.body;
-        if(![peopleId, roleId, projectId].every(Boolean)) return res.apiResponse(401);
+        if (![peopleId, roleId, projectId].every(Boolean)) return res.apiResponse(401);
         try {
             const project = await prisma.project.findUnique({
                 where: {
@@ -119,7 +134,7 @@ export default class ProjectController {
                     id: peopleId
                 }
             })
-            if(![user, project, role].every(Boolean)) return res.apiResponse(500);
+            if (![user, project, role].every(Boolean)) return res.apiResponse(500);
             await prisma.userProject.create({
                 data: {
                     userId: peopleId,
@@ -134,10 +149,13 @@ export default class ProjectController {
         }
     }
 
-    async updatePeople(req: FastifyRequest<{Body: {peopleId: number, roleId: number}, Params: {projectId: number}}>, res: FastifyReply) {
+    async updatePeople(req: FastifyRequest<{
+        Body: { peopleId: number, roleId: number },
+        Params: { projectId: number }
+    }>, res: FastifyReply) {
         const projectId = Number(req.params.projectId);
         const {peopleId, roleId} = req.body;
-        if(![peopleId, roleId, projectId].every(Boolean)) return res.apiResponse(401);
+        if (![peopleId, roleId, projectId].every(Boolean)) return res.apiResponse(401);
         try {
             const project = await prisma.project.findUnique({
                 where: {
@@ -155,7 +173,7 @@ export default class ProjectController {
                 }
             })
             if (!user || !project || !role) return res.apiResponse(500);
-            if(user.id === project.creatorId) return res.apiResponse(500)
+            if (user.id === project.creatorId) return res.apiResponse(500)
             await prisma.userProject.update({
                 where: {
                     userId_projectId: {
@@ -176,7 +194,7 @@ export default class ProjectController {
 
     async getAll(req: FastifyRequest, res: FastifyReply) {
         const userId = Number(req.user?.userId);
-        if(!userId) return res.apiResponse(401);
+        if (!userId) return res.apiResponse(401);
         try {
             const projects = await prisma.project.findMany({
                 where: {
@@ -200,7 +218,7 @@ export default class ProjectController {
 
     async getAllDel(req: FastifyRequest, res: FastifyReply) {
         const userId = Number(req.user?.userId);
-        if(!userId) return res.apiResponse(401);
+        if (!userId) return res.apiResponse(401);
         try {
             const projects = await prisma.project.findMany({
                 where: {
@@ -218,9 +236,9 @@ export default class ProjectController {
         }
     }
 
-    async leave(req: FastifyRequest<{Params: {projectId: number}}>, res: FastifyReply) {
+    async leave(req: FastifyRequest<{ Params: { projectId: number } }>, res: FastifyReply) {
         const userId = Number(req.user?.userId);
-        if(!userId) return res.apiResponse(401);
+        if (!userId) return res.apiResponse(401);
         const projectId = Number(req.params.projectId);
         try {
             const project = await prisma.project.findUnique({
@@ -228,8 +246,8 @@ export default class ProjectController {
                     id: projectId,
                 }
             })
-            if(!project) return res.apiResponse(401);
-            if(project.creatorId === userId) return res.apiResponse(403);
+            if (!project) return res.apiResponse(401);
+            if (project.creatorId === userId) return res.apiResponse(403);
             await prisma.userProject.delete({
                 where: {
                     userId_projectId: {
@@ -245,18 +263,18 @@ export default class ProjectController {
         }
     }
 
-    async restore(req: FastifyRequest<{Params: {projectId: number}}>, res: FastifyReply) {
+    async restore(req: FastifyRequest<{ Params: { projectId: number } }>, res: FastifyReply) {
         const projectId = Number(req.params.projectId);
         const userId = Number(req.user?.userId);
         try {
             const project = await prisma.project.findUnique({
-                where: { id: projectId },
+                where: {id: projectId},
             });
             if (!project || project.creatorId !== userId) {
                 return res.apiResponse(400);
             }
             await prisma.project.update({
-                where: { id: projectId },
+                where: {id: projectId},
                 data: {
                     delete: false,
                 }
