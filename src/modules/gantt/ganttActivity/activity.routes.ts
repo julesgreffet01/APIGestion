@@ -1,7 +1,7 @@
 import {FastifyPluginAsync, FastifyInstance} from 'fastify'
-import ActivityController from "./activity.controller";
-import {useRequireRole} from '../../../hooks/droits'
-import {useCheckActivityInGantt} from "./activity.helpers";
+import ActivityController from "./activity.controller.js";
+import {useRequireRole} from '../../../hooks/droits.js'
+import {useCheckActivityInGantt} from "./activity.helpers.js";
 
 const activityRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const activityController = new ActivityController();

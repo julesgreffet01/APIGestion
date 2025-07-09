@@ -1,5 +1,5 @@
 import { FastifyPluginAsync, FastifyInstance } from 'fastify'
-import StatutController from "./statut.controller";
+import StatutController from "./statut.controller.js";
 
 const statutRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const statutController = new StatutController()

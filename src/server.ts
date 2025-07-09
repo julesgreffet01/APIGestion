@@ -1,7 +1,7 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import * as dotenv from 'dotenv';
-import apiResponsePlugin from './plugins/response'
-import droitsPlugins from './plugins/droits'
+import apiResponsePlugin from './plugins/response.js'
+import droitsPlugins from './plugins/droits.js'
 import jwt from '@fastify/jwt'
 import path from 'path'
 import fastifyMultipart from '@fastify/multipart'
@@ -11,13 +11,13 @@ import fastifyCookie from '@fastify/cookie';
 import cors from '@fastify/cors'
 
 //----- routes ---
-import userRoutes from './modules/user/user.routes'
-import authRoutes from './modules/auth/auth.routes'
-import calendarRoutes from './modules/calendar/calendar.routes'
-import projectRoutes from './modules/project/project.routes'
-import roleRoutes from './modules/role/role.routes'
-import statutRoutes from "./modules/statut/statut.routes";
-import vaultRoutes from "./modules/vaultPassword/vault.routes";
+import userRoutes from './modules/user/user.routes.js'
+import authRoutes from './modules/auth/auth.routes.js'
+import calendarRoutes from './modules/calendar/calendar.routes.js'
+import projectRoutes from './modules/project/project.routes.js'
+import roleRoutes from './modules/role/role.routes.js'
+import statutRoutes from "./modules/statut/statut.routes.js";
+import vaultRoutes from "./modules/vaultPassword/vault.routes.js";
 
 
 dotenv.config();

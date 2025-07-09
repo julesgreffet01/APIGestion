@@ -1,8 +1,8 @@
 import { FastifyPluginAsync, FastifyInstance } from 'fastify'
-import GanttController from "./gantt.controller";
-import {useRequireRole} from '../../hooks/droits'
-import {useCheckGanttInProject} from "./gantt.helpers";
-import activityRoutes from "./ganttActivity/activity.routes";
+import GanttController from "./gantt.controller.js";
+import {useRequireRole} from '../../hooks/droits.js'
+import {useCheckGanttInProject} from "./gantt.helpers.js";
+import activityRoutes from "./ganttActivity/activity.routes.js";
 
 const ganttRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const ganttController = new GanttController();

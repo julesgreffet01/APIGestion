@@ -1,5 +1,5 @@
 import { FastifyPluginAsync, FastifyInstance } from 'fastify'
-import RoleController from "./role.controller";
+import RoleController from "./role.controller.js";
 
 const roleRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const roleController = new RoleController();

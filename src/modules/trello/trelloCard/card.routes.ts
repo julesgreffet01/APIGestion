@@ -1,7 +1,7 @@
 import {FastifyPluginAsync, FastifyInstance} from 'fastify'
-import CardController from "./card.controller";
-import {useRequireRole} from '../../../hooks/droits'
-import {useCheckCardInList} from "./card.helpers";
+import CardController from "./card.controller.js";
+import {useRequireRole} from '../../../hooks/droits.js'
+import {useCheckCardInList} from "./card.helpers.js";
 
 const cardRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const cardController = new CardController()

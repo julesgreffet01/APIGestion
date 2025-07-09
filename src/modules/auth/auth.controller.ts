@@ -5,8 +5,8 @@ import fs from 'fs'
 import path from 'path'
 import { pipeline } from 'stream'
 import { promisify } from 'util'
-import {sendMail} from '../../utils/mailer';
-import {normalizeEmail} from "../../utils/email";
+import {sendMail} from '../../utils/mailer.js';
+import {normalizeEmail} from "../../utils/email.js";
 
 const pump = promisify(pipeline)
 const prisma = new PrismaClient()

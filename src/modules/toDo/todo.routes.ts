@@ -1,8 +1,8 @@
 import { FastifyPluginAsync, FastifyInstance } from 'fastify'
-import TodoController from "./todo.controller";
-import {useRequireRole} from '../../hooks/droits'
-import {useCheckTodoInProject} from "./todo.helpers";
-import taskRoutes from "./toDoTask/task.routes";
+import TodoController from "./todo.controller.js";
+import {useRequireRole} from '../../hooks/droits.js'
+import {useCheckTodoInProject} from "./todo.helpers.js";
+import taskRoutes from "./toDoTask/task.routes.js";
 
 const todoRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const todoController = new TodoController()

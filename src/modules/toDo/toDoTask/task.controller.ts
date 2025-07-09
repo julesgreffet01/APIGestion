@@ -1,6 +1,6 @@
 import {FastifyRequest, FastifyReply} from 'fastify';
 import {PrismaClient} from '@prisma/client';
-import {isStrictValidDate} from '../../../utils/date'
+import {isStrictValidDate} from '../../../utils/date.js'
 
 const prisma = new PrismaClient();
 export default class taskController {
@@ -103,6 +103,8 @@ export default class taskController {
         }
         const data: any = {};
         if (name !== undefined) data.name = name;
+        console.log(realDate);
+        if (realDate) console.log(isStrictValidDate(realDate))
         if (realDate !== undefined && isStrictValidDate(realDate)) data.realDate = new Date(realDate);
         if (Object.keys(data).length === 0) {
             return res.apiResponse(400, { message: "Aucune donnée à mettre à jour." });

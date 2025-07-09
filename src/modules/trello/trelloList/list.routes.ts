@@ -1,8 +1,8 @@
 import {FastifyPluginAsync, FastifyInstance} from 'fastify'
-import ListController from "./list.controller";
-import {useCheckAccessProject, useRequireRole} from '../../../hooks/droits'
-import {useCheckListInTrello} from "./list.helpers";
-import cardRoutes from "../trelloCard/card.routes";
+import ListController from "./list.controller.js";
+import {useCheckAccessProject, useRequireRole} from '../../../hooks/droits.js'
+import {useCheckListInTrello} from "./list.helpers.js";
+import cardRoutes from "../trelloCard/card.routes.js";
 
 const listRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const listController = new ListController()

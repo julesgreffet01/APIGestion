@@ -1,9 +1,9 @@
 import { FastifyPluginAsync, FastifyInstance } from 'fastify'
-import ProjectController from "./project.controller";
-import {useVerifyToken, useRequireRole, useCheckAccessProject} from '../../hooks/droits'
-import ganttRoutes from "../gantt/gantt.routes";
-import todoRoutes from "../toDo/todo.routes";
-import trelloRoutes from "../trello/trello.routes";
+import ProjectController from "./project.controller.js";
+import {useVerifyToken, useRequireRole, useCheckAccessProject} from '../../hooks/droits.js'
+import ganttRoutes from "../gantt/gantt.routes.js";
+import todoRoutes from "../toDo/todo.routes.js";
+import trelloRoutes from "../trello/trello.routes.js";
 
 const projectRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const projectController = new ProjectController();

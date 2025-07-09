@@ -1,6 +1,6 @@
 import { FastifyPluginAsync, FastifyInstance } from 'fastify'
-import AuthController from './auth.controller'
-import {useVerifyToken} from '../../hooks/droits'
+import AuthController from './auth.controller.js'
+import {useVerifyToken} from '../../hooks/droits.js'
 
 const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const authController = new AuthController()

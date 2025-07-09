@@ -1,6 +1,6 @@
 import { FastifyPluginAsync, FastifyInstance } from 'fastify'
-import CalendarController from "./calendar.controller";
-import {useVerifyToken} from '../../hooks/droits'
+import CalendarController from "./calendar.controller.js";
+import {useVerifyToken} from '../../hooks/droits.js'
 
 const calendarRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const calendarController = new CalendarController();

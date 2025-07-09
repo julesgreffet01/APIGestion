@@ -1,7 +1,7 @@
 import {FastifyPluginAsync, FastifyInstance} from 'fastify'
-import TaskController from "./task.controller";
-import {useRequireRole} from '../../../hooks/droits'
-import {useCheckTaskInTodo} from "./task.helpers";
+import TaskController from "./task.controller.js";
+import {useRequireRole} from '../../../hooks/droits.js'
+import {useCheckTaskInTodo} from "./task.helpers.js";
 
 const activityRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     const taskController = new TaskController();

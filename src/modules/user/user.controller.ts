@@ -1,8 +1,8 @@
 import {FastifyRequest, FastifyReply} from 'fastify'
 import {PrismaClient} from '@prisma/client';
 import bcrypt from 'bcrypt'
-import {normalizeEmail} from "../../utils/email";
-import {searchUserItems} from "./user.helpers";
+import {normalizeEmail} from "../../utils/email.js";
+import {searchUserItems} from "./user.helpers.js";
 
 const prisma = new PrismaClient()
 export default class UserController {
@@ -50,12 +50,7 @@ export default class UserController {
     async progressed(req: FastifyRequest, res: FastifyReply) {
         const userId = req.user?.userId;
         if(!userId) return res.apiResponse(401);
-        const completedStatut = await prisma.statut.findFirst({
-            where: { libelle: 'complété' }
-        });
-
-        if (!completedStatut) throw new Error("Statut 'Complété' non trouvé");
-        const statutId = completedStatut.id;
+        const statutId = 3;
 
         const [trelloCards, todoTasks, ganttTasks] = await Promise.all([
             prisma.trelloCard.findMany({
@@ -100,7 +95,7 @@ export default class UserController {
 
             result[key]++;
         }
-
+        console.log(result);
         return result;
     }
 
